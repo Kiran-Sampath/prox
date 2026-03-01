@@ -22,7 +22,7 @@ We bias toward **rejecting borderline cases** rather than making bad matches.
   - `scraped_products.json` – Messy scraped rows from multiple retailers (52 rows), including size-conversion cases like sc_051, sc_052.
   - `learned_brands.json` – Optional output from `build_brands.py` for inspection. Brand extraction in `normalize.py` learns from the catalog at import and does not use this file.
 - **sql/**
-  - `schema.sql` – Postgres/Supabase schema for `existing_products`, `scraped_products`, and `product_matches`.
+  - `schema.sql` – Postgres/Supabase schema for `existing_products`, `scraped_products`, and `product_matches`. **Paste this into the Supabase SQL Editor** (Dashboard → SQL Editor) to create the tables before seeding.
 - **src/**
   - `normalize.py` – Name/size parsing, normalization, promo stripping, synonyms, pack-size parsing.
   - `match.py` – Candidate generation, scoring, unit conversion and tolerance, variant guardrails.
@@ -120,6 +120,8 @@ Overall we’re **conservative**: we’d rather reject than force a bad match.
 
 Schema in `sql/schema.sql`: `existing_products` (master catalog with `image_url`), `scraped_products` (raw scraped rows), `product_matches` (scraped_product_id, matched_existing_id, match_score, match_method, matched_at).
 
+**Setup:** Create the tables by pasting the contents of `sql/schema.sql` into the **Supabase SQL Editor** (Dashboard → SQL Editor → New query), then run it. After that you can seed and run the matcher.
+
 - **db.py** – Loads `.env` from project root, exposes `get_supabase`, `fetch_table`, `upsert_rows`, `upsert_matches`.
 - **seed_supabase.py** – Reads local JSON and upserts into Supabase.
 - **run_match.py** – Can use local JSON or Supabase:
@@ -128,7 +130,51 @@ Schema in `sql/schema.sql`: `existing_products` (master catalog with `image_url`
 
 ---
 
-## 4. Validation
+## 4. Sample dataset: structure, edge cases & production
+
+### How we structured the sample dataset
+
+We use two files that mirror a real setup: a **master catalog** and **scraped retailer data**.
+
+- **existing_products.json (23 rows)** – Acts as the "source of truth" catalog with `id`, `product_name`, `size_raw`, `upc`, `image_url`, `retailer`. We included at least two products per brand so brand learning works (e.g. Tide, Dawn, Chobani each have multiple entries). We added chicken (no brand) on purpose so we can test the no-brand path. IDs are `ex_001`, `ex_002`, … so we can reference them in ground truth.
+- **scraped_products.json (52 rows)** – Simulates messy rows you'd get from multiple retailers: same products with different titles, promos, typos, missing UPCs, and size formats. Each row has `id` (sc_001 … sc_052), `retailer`, `product_name`, `size_raw`, `upc` (often null), `product_url`. We didn't aim for realism in URLs; we aimed for **coverage**: every important edge case appears at least once so the matcher and validator can be tested.
+- **validation/sample_20.csv (52 rows)** – One row per scraped product. Columns: `scraped_id`, `expected_outcome` (match or reject), `expected_existing_id` (e.g. ex_005 or ex_005|ex_006 when two catalog rows are the same product), and `notes`. This is our hand-labeled ground truth. We ordered rows by scraped_id so it's easy to see the full set and compare with `results.csv`.
+
+So: **one scraped product → one ground-truth row**. That lets us report accuracy as "52/52" and catch every mismatch.
+
+### Edge cases we intentionally included
+
+We added these so we can test specific behaviors and avoid false positives:
+
+| What we added | Why |
+|---------------|-----|
+| **Promo noise** | "NEW!", "SALE", "Rollback", "2 for $10", "BEST BY 2027", "LIMIT 4", "ONLINE ONLY" – to stress-test promo stripping and make sure we don't match on junk. |
+| **UPC vs no UPC** | Some scraped rows have UPC, some don't. We want to see UPC matches win when present and brand+size+token take over when UPC is missing. |
+| **Flavor / variant** | Chobani strawberry vs vanilla, Oreo Double Stuf vs original – so we reject cross-variant matches (strawberry ≠ vanilla). |
+| **Sugar** | Coke Zero vs Coke, Chobani Zero Sugar vs regular – we reject when "zero" appears on one side and not the other. |
+| **Fat level** | Fairlife whole vs 2%, Kerrygold salted vs unsalted – we reject whole vs 2% and salted vs unsalted. |
+| **Pasta shape** | Barilla spaghetti vs penne – we reject different shapes even when brand matches (and we document that penne→spaghetti is a known limitation we track). |
+| **Pack / count** | Bounty 6 double rolls vs 8 rolls, Tide PODS 16ct vs 32ct, Coke 12pk vs mini 10pk 7.5oz – we reject when pack size or count is outside tolerance. |
+| **Size units** | 92 oz vs 92 fl oz (Tide, Dawn) – we treat oz (weight) and fl oz (volume) as different dimensions and reject. 16 oz vs 1 lb chicken – we accept (same mass, conversion). |
+| **Typos** | "T1de", "Chikcen" – to test that we can still match when the brand is recoverable (T1de→Tide) and that we don't break on spelling (Chikcen→chicken, no brand). |
+| **Missing size** | One Chobani row with no size – we expect reject unless there's strong other evidence (ambiguous). |
+| **No brand** | Chicken breast, store-brand dish soap – we expect no match to a branded catalog entry; brand is None and we rely on size + token for generic chicken. |
+| **Same product, multiple catalog rows** | ex_005 and ex_006 both Coke 12pk (same UPC) – ground truth allows either so we can accept "match to ex_005 or ex_006". |
+
+In `sample_20.csv` we mark many of these as **expected reject** even when names look similar, so the system stays biased against false positives and we can measure that with evaluate.py.
+
+### Adapting this to real production data
+
+- **Catalog** – Replace `existing_products.json` with your real products table: canonical id, name, size, UPC, brand (if you have it), image_url, etc. Ensure at least a few products per brand so catalog-driven brand learning still works. In production you'd typically have thousands or millions of rows; indexes on `upc` and a normalized `brand` (or first-token) keep candidate generation fast.
+- **Scraped feed** – Replace `scraped_products.json` with live scraped or API data from each retailer. Keep the same shape (id, product_name, size_raw, upc, retailer) so normalize and match don't need to change. If your feed has extra fields (price, category), add them to the schema and pass them through; the matcher only needs name, size, UPC, and optionally retailer.
+- **Ground truth** – For production you don't label every row. Label a **sample** (e.g. 500–2000 rows per retailer or per category) that includes the edge cases you care about (promos, variants, no UPC, typos). Use that sample to run evaluate.py and tune thresholds. As you add new edge cases in the wild, add them to the sample and expected outcomes so regressions show up.
+- **Scale** – Use Supabase (or your DB) for existing + scraped tables; run_match with `--supabase --write-matches` so matches live in the DB. Add matcher_version and status (e.g. proposed / approved / rejected) so you can re-run and compare, and optionally send low-confidence matches to human review before treating them as linked.
+
+In short: our sample dataset is structured like a minimal production setup (catalog + scraped + one ground-truth row per scraped product), with edge cases added by design so we can test and document behavior. For production you keep that structure and swap in real catalog and feeds, label a representative sample, and scale the pipeline with your DB and tooling.
+
+---
+
+## 5. Validation
 
 `evaluate.py` compares matcher output to ground truth in `validation/sample_20.csv` (columns: scraped_id, expected_outcome, expected_existing_id, notes). Use `ex_005|ex_006` when multiple existing rows are the same product.
 
@@ -142,18 +188,36 @@ python src/evaluate
 
 You get accuracy and a list of mismatches (wrong match, wrong reject, or wrong existing ID).
 
-**Current:** 52/52 correct (100%) on the labeled set. Ground truth includes size-conversion rows (sc_051, sc_052), allows ex_005|ex_006 for Coke 12pk, and expects rejects for oz vs fl oz (e.g. Tide 92 oz vs 92 fl oz).
+**False match analysis.** When you run evaluate you get four mismatches: we expect REJECT but the matcher returns MATCH (false positive). Each is analysed separately below.
+
+- **sc_054** – Scraped row is a bundle (Tide and Downy duo). We want it rejected because it is two products, not one. The matcher has no bundle concept so it matches to single Tide 92 (ex_001).
+- **sc_055** – Scraped row is Tide-Style, a store-brand copycat not real Tide. We want it rejected. The matcher does not detect lookalikes like Tide-Style so it treats it as Tide and matches to ex_001.
+- **sc_056** – Scraped row is Tide 92 fl oz refill pouch; the catalog has Tide 92 bottle. We want it rejected for different packaging form. The matcher does not use packaging form so it matches to the bottle (ex_001).
+- **sc_057** – Scraped row is Dawn Hand Soap 24 fl oz; the catalog has Dawn Dish Soap 24 fl oz. We want it rejected for different product type. The matcher has no product-type concept so it matches to Dawn 24 dish soap (ex_004).
+
+In short the matcher is missing bundles, copycat or lookalike brands, packaging form, and product type or category; until we add that these four show up as mismatches.
+
+**Suggested fixes.** For each mismatch above, a possible fix is:
+
+- **sc_054 (bundle)** – Detect bundle cues in the scraped name or size (e.g. "duo", "&", "with", "bundle", "2-pack" when it means two different products). If detected, reject or treat as a different SKU so we do not match to a single catalog item.
+- **sc_055 (copycat)** – Detect lookalike patterns such as "X-Style", "X like", "comparable to X" in the product name. When detected, do not assign the brand X to the scraped row (or reject the candidate) so it does not match to the real brand.
+- **sc_056 (packaging form)** – Parse or tag packaging form (e.g. bottle, pouch, refill, tub) on both scraped and catalog side. Reject when the forms differ for the same brand and size.
+- **sc_057 (product type)** – Add product type or category (e.g. hand soap vs dish soap, napkins vs paper towels). Parse or tag it from the name or from a category field; reject when scraped and catalog types differ.
+
+These can be implemented as extra checks in the matcher (e.g. in normalize or match) or as a separate pre-filter before scoring.
+
+
 
 ---
 
-## 5. Brand learning & tests
+## 6. Brand learning & tests
 
 - **build_brands.py** – Optional. Learns brand tokens from `existing_products.json` (same logic as normalize: first token, first-two-token, frequency merge) and writes `learned_brands.json` for inspection. normalize.py does not depend on it; it learns from the catalog at import.
 - **test_size_score.py** – 13 tests for size scoring: conversions (16 oz vs 1 lb, 500 ml vs 0.5 L, etc.), different dimensions (6 oz vs 6 fl oz → 0), count tolerance (±1), missing size (0.4), numeric ±2%. Run: `python -m pytest tests/test_size_score.py -v`. Needs `pytest` from requirements.
 
 ---
 
-## 6. Sample dataset: structure, edge cases & production
+DELETEME
 
 ### How we structured the sample dataset
 

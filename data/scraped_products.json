@@ -414,5 +414,45 @@
       "size_raw": "1 lb",
       "upc": null,
       "product_url": "https://www.ralphs.com/p/barilla-spaghetti-1lb"
+    },
+    {
+      "id": "sc_053",
+      "retailer": "target",
+      "product_name": "Bounty Paper Towels 6 ct",
+      "size_raw": "6 ct",
+      "upc": null,
+      "product_url": "https://www.target.com/p/bounty-napkins-6ct"
+    },
+    {
+      "id": "sc_054",
+      "retailer": "ralphs",
+      "product_name": "Tide & Downy Laundry Duo 92 fl oz",
+      "size_raw": "92 fl oz",
+      "upc": null,
+      "product_url": "https://www.ralphs.com/p/tide-downy-duo"
+    },
+    {
+      "id": "sc_055",
+      "retailer": "walmart",
+      "product_name": "Tide Style Laundry Detergent 92 fl oz",
+      "size_raw": "92 fl oz",
+      "upc": null,
+      "product_url": "https://www.walmart.com/ip/tide-style-92"
+    },
+    {
+      "id": "sc_056",
+      "retailer": "target",
+      "product_name": "Tide Liquid Laundry Detergent 92 fl oz Refill Pouch",
+      "size_raw": "92 fl oz",
+      "upc": null,
+      "product_url": "https://www.target.com/p/tide-refill-pouch-92"
+    },
+    {
+      "id": "sc_057",
+      "retailer": "walmart",
+      "product_name": "Dawn Hand Soap 24 fl oz",
+      "size_raw": "24 fl oz",
+      "upc": null,
+      "product_url": "https://www.walmart.com/ip/dawn-hand-soap-24"
     }
   ]
