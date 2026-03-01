@@ -1,0 +1,209 @@
+[
+  {
+    "id": "ex_001",
+    "retailer": "walmart",
+    "product_name": "Tide Original Liquid Laundry Detergent, 92 fl oz",
+    "size_raw": "92 fl oz",
+    "upc": "037000874342",
+    "image_url": "https://img.example.com/tide_original_92.jpg",
+    "product_url": "https://www.walmart.com/ip/tide-original-92"
+  },
+  {
+    "id": "ex_002",
+    "retailer": "target",
+    "product_name": "Tide Free & Gentle Liquid Detergent 92 fl oz",
+    "size_raw": "92 fl oz",
+    "upc": "037000999999",
+    "image_url": "https://img.example.com/tide_free_gentle_92.jpg",
+    "product_url": "https://www.target.com/p/tide-free-gentle-92"
+  },
+  {
+    "id": "ex_003",
+    "retailer": "ralphs",
+    "product_name": "Tide PODS Laundry Detergent Pacs, Original Scent, 16 ct",
+    "size_raw": "16 ct",
+    "upc": "037000867000",
+    "image_url": "https://img.example.com/tide_pods_original_16ct.jpg",
+    "product_url": "https://www.ralphs.com/p/tide-pods-original-16"
+  },
+  {
+    "id": "ex_004",
+    "retailer": "walmart",
+    "product_name": "Dawn Ultra Dishwashing Liquid Soap, Original Scent, 24 fl oz",
+    "size_raw": "24 fl oz",
+    "upc": "030772120241",
+    "image_url": "https://img.example.com/dawn_ultra_24.jpg",
+    "product_url": "https://www.walmart.com/ip/dawn-ultra-24"
+  },
+  {
+    "id": "ex_005",
+    "retailer": "target",
+    "product_name": "Coca-Cola Soda - 12pk/12 fl oz Cans",
+    "size_raw": "12 ct",
+    "upc": "049000001327",
+    "image_url": "https://img.example.com/coke_12pk_cans.jpg",
+    "product_url": "https://www.target.com/p/coca-cola-12pk"
+  },
+  {
+    "id": "ex_006",
+    "retailer": "walmart",
+    "product_name": "Coca-Cola Classic Soda Pop, 12 Pack, 12 fl oz Cans",
+    "size_raw": "12 pack",
+    "upc": "049000001327",
+    "image_url": "https://img.example.com/coke_12pk_cans.jpg",
+    "product_url": "https://www.walmart.com/ip/coke-12pk"
+  },
+  {
+    "id": "ex_007",
+    "retailer": "ralphs",
+    "product_name": "Chobani Greek Yogurt, Strawberry, 5.3 oz",
+    "size_raw": "5.3 oz",
+    "upc": "818290010119",
+    "image_url": "https://img.example.com/chobani_strawberry_5_3.jpg",
+    "product_url": "https://www.ralphs.com/p/chobani-strawberry-5-3"
+  },
+  {
+    "id": "ex_008",
+    "retailer": "target",
+    "product_name": "Chobani Greek Yogurt Strawberry on the Bottom - 5.3oz",
+    "size_raw": "5.3 oz",
+    "upc": "818290010119",
+    "image_url": "https://img.example.com/chobani_strawberry_5_3.jpg",
+    "product_url": "https://www.target.com/p/chobani-strawberry-5-3"
+  },
+  {
+    "id": "ex_009",
+    "retailer": "walmart",
+    "product_name": "Boneless Skinless Chicken Breast, 1 lb (approx.)",
+    "size_raw": "1 lb",
+    "upc": null,
+    "image_url": "https://img.example.com/chicken_breast_1lb.jpg",
+    "product_url": "https://www.walmart.com/ip/chicken-breast-1lb"
+  },
+  {
+    "id": "ex_010",
+    "retailer": "ralphs",
+    "product_name": "Chicken Breast Boneless Skinless - 1 lb",
+    "size_raw": "1 lb",
+    "upc": null,
+    "image_url": "https://img.example.com/chicken_breast_1lb.jpg",
+    "product_url": "https://www.ralphs.com/p/chicken-breast-1lb"
+  },
+  {
+    "id": "ex_011",
+    "retailer": "target",
+    "product_name": "Oreo Chocolate Sandwich Cookies Family Size - 19.1oz",
+    "size_raw": "19.1 oz",
+    "upc": "044000032383",
+    "image_url": "https://img.example.com/oreo_family_19_1.jpg",
+    "product_url": "https://www.target.com/p/oreo-family-19-1"
+  },
+  {
+    "id": "ex_012",
+    "retailer": "walmart",
+    "product_name": "OREO Original Chocolate Sandwich Cookies, Family Size, 19.1 oz",
+    "size_raw": "19.1 oz",
+    "upc": "044000032383",
+    "image_url": "https://img.example.com/oreo_family_19_1.jpg",
+    "product_url": "https://www.walmart.com/ip/oreo-family-19-1"
+  },
+  {
+    "id": "ex_013",
+    "retailer": "ralphs",
+    "product_name": "Barilla Spaghetti Pasta No.5, 16 oz",
+    "size_raw": "16 oz",
+    "upc": "076808280104",
+    "image_url": "https://img.example.com/barilla_spaghetti_16.jpg",
+    "product_url": "https://www.ralphs.com/p/barilla-spaghetti-16"
+  },
+  {
+    "id": "ex_014",
+    "retailer": "walmart",
+    "product_name": "Barilla Spaghetti Pasta, 1 lb (16 oz)",
+    "size_raw": "1 lb",
+    "upc": "076808280104",
+    "image_url": "https://img.example.com/barilla_spaghetti_16.jpg",
+    "product_url": "https://www.walmart.com/ip/barilla-spaghetti-16"
+  },
+  {
+    "id": "ex_015",
+    "retailer": "target",
+    "product_name": "Bounty Paper Towels - 6 Double Rolls",
+    "size_raw": "6 ct",
+    "upc": "037000876987",
+    "image_url": "https://img.example.com/bounty_6_double.jpg",
+    "product_url": "https://www.target.com/p/bounty-6-roll"
+  },
+  {
+    "id": "ex_016",
+    "retailer": "walmart",
+    "product_name": "Bounty Quick-Size Paper Towels, 6 Double Rolls",
+    "size_raw": "6 double rolls",
+    "upc": "037000876987",
+    "image_url": "https://img.example.com/bounty_6_double.jpg",
+    "product_url": "https://www.walmart.com/ip/bounty-6-double"
+  },
+  {
+    "id": "ex_017",
+    "retailer": "ralphs",
+    "product_name": "Fairlife 2% Ultra-Filtered Milk, 52 fl oz",
+    "size_raw": "52 fl oz",
+    "upc": "030063000001",
+    "image_url": "https://img.example.com/fairlife_2pct_52.jpg",
+    "product_url": "https://www.ralphs.com/p/fairlife-2-52"
+  },
+  {
+    "id": "ex_018",
+    "retailer": "walmart",
+    "product_name": "Fairlife 2% Milk, Ultra-Filtered, 52 Fl Oz",
+    "size_raw": "52 fl oz",
+    "upc": "030063000001",
+    "image_url": "https://img.example.com/fairlife_2pct_52.jpg",
+    "product_url": "https://www.walmart.com/ip/fairlife-2-52"
+  },
+  {
+    "id": "ex_019",
+    "retailer": "target",
+    "product_name": "Kerrygold Pure Irish Butter, Salted, 8 oz",
+    "size_raw": "8 oz",
+    "upc": "400041700000",
+    "image_url": "https://img.example.com/kerrygold_salted_8.jpg",
+    "product_url": "https://www.target.com/p/kerrygold-salted-8"
+  },
+  {
+    "id": "ex_020",
+    "retailer": "ralphs",
+    "product_name": "Kerrygold Salted Butter 8oz",
+    "size_raw": "8 oz",
+    "upc": "400041700000",
+    "image_url": "https://img.example.com/kerrygold_salted_8.jpg",
+    "product_url": "https://www.ralphs.com/p/kerrygold-salted-8"
+  },
+  {
+    "id": "ex_021",
+    "retailer": "target",
+    "product_name": "Dawn Platinum Dish Soap, 30 fl oz",
+    "size_raw": "30 fl oz",
+    "upc": null,
+    "image_url": "https://img.example.com/dawn_platinum_30.jpg",
+    "product_url": "https://www.target.com/p/dawn-platinum-30"
+  },
+  {
+    "id": "ex_022",
+    "retailer": "walmart",
+    "product_name": "Sprite Lemon-Lime Soda, 12 Pack, 12 fl oz Cans",
+    "size_raw": "12 ct",
+    "upc": "049000004001",
+    "image_url": "https://img.example.com/sprite_12pk.jpg",
+    "product_url": "https://www.walmart.com/ip/sprite-12pk"
+  },
+  {
+    "id": "ex_023",
+    "retailer": "ralphs",
+    "product_name": "Sprite Zero Sugar Lemon-Lime Soda, 12pk 12 fl oz Cans",
+    "size_raw": "12 ct",
+    "upc": null,
+    "image_url": "https://img.example.com/sprite_zero_12pk.jpg",
+    "product_url": "https://www.ralphs.com/p/sprite-zero-12pk"
+  }
+]

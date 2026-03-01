@@ -1,0 +1,29 @@
+{
+  "brands": [
+    "barilla",
+    "bounty",
+    "chobani",
+    "coca-cola",
+    "dawn",
+    "fairlife",
+    "kerrygold",
+    "oreo",
+    "sprite",
+    "tide"
+  ],
+  "counts": {
+    "tide": 3,
+    "dawn": 2,
+    "coca-cola": 2,
+    "chobani": 4,
+    "oreo": 2,
+    "barilla": 4,
+    "bounty": 2,
+    "fairlife": 4,
+    "kerrygold": 2,
+    "sprite": 2
+  },
+  "min_count": 2,
+  "source": "C:\\Users\\kiran\\OneDrive\\Desktop\\Prox\\prox-track-c\\data\\existing_products.json",
+  "num_products": 23
+}
