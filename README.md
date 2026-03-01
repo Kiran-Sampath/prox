@@ -120,13 +120,28 @@ Overall we’re **conservative**: we’d rather reject than force a bad match.
 
 Schema in `sql/schema.sql`: `existing_products` (master catalog with `image_url`), `scraped_products` (raw scraped rows), `product_matches` (scraped_product_id, matched_existing_id, match_score, match_method, matched_at).
 
-**Setup:** Create the tables by pasting the contents of `sql/schema.sql` into the **Supabase SQL Editor** (Dashboard → SQL Editor → New query), then run it. After that you can seed and run the matcher.
+**Supabase setup and run (primary path):**
 
-- **db.py** – Loads `.env` from project root, exposes `get_supabase`, `fetch_table`, `upsert_rows`, `upsert_matches`.
-- **seed_supabase.py** – Reads local JSON and upserts into Supabase.
-- **run_match.py** – Can use local JSON or Supabase:
-  - `python -m src.run_match` → JSON in, writes `validation/results.csv`.
-  - `python -m src.run_match --supabase --write-matches` → loads existing + scraped from Supabase, writes `product_matches` there and still writes `results.csv` locally.
+1. In Supabase, open the SQL Editor (Dashboard → SQL Editor), paste the contents of `sql/schema.sql`, and run it to create the three tables.
+2. In the project root, create a `.env` from `.env.example` and fill in `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
+3. Seed and run the matcher against Supabase:
+
+```bash
+python src/seed_supabase.py
+python -m src.run_match --supabase --write-matches
+```
+
+This reads catalog and scraped rows from the local JSON files, upserts them into Supabase, runs normalization and matching, writes matches into the `product_matches` table, and also writes `validation/results.csv` locally for evaluation.
+
+**Local-only mode (for quick runs):**
+
+You can run the same logic without Supabase by reading directly from JSON:
+
+```bash
+python -m src.run_match
+```
+
+This skips the database and just writes `validation/results.csv`; `python src/evaluate` works the same either way.
 
 ---
 
@@ -179,10 +194,12 @@ In short: our sample dataset is structured like a minimal production setup (cata
 `evaluate.py` compares matcher output to ground truth in `validation/sample_20.csv` (columns: scraped_id, expected_outcome, expected_existing_id, notes). Use `ex_005|ex_006` when multiple existing rows are the same product.
 
 ```bash
-python -m src.run_match
-# or with Supabase:
+# Supabase-backed run (primary)
 python -m src.run_match --supabase --write-matches
+python src/evaluate
 
+# Local JSON-only run (no Supabase)
+python -m src.run_match
 python src/evaluate
 ```
 
