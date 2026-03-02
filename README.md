@@ -15,6 +15,40 @@ We bias toward **rejecting borderline cases** rather than making bad matches.
 
 ---
 
+## Setup & how to run
+
+**1. Install dependencies**
+
+```bash
+pip install -r requirements.txt
+```
+
+**2. Supabase setup (primary path)**
+
+- In Supabase: Dashboard → SQL Editor → paste `sql/schema.sql` → run to create `existing_products`, `scraped_products`, `product_matches`.
+- In project root: copy `.env.example` to `.env` and set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
+
+**3. Seed and run**
+
+```bash
+python -m src.seed_supabase
+python -m src.run_match --supabase --write-matches
+python src/evaluate
+```
+
+This seeds the catalog and scraped rows into Supabase, runs the matcher, writes matches to `product_matches`, and evaluates against ground truth. Results also go to `validation/results.csv`.
+
+**Local-only (no Supabase):**
+
+```bash
+python -m src.run_match
+python src/evaluate
+```
+
+Reads from `data/*.json` directly and writes `validation/results.csv`; evaluate works the same.
+
+---
+
 ## Project structure
 
 - **data/**
@@ -120,28 +154,9 @@ Overall we’re **conservative**: we’d rather reject than force a bad match.
 
 Schema in `sql/schema.sql`: `existing_products` (master catalog with `image_url`), `scraped_products` (raw scraped rows), `product_matches` (scraped_product_id, matched_existing_id, match_score, match_method, matched_at).
 
-**Supabase setup and run (primary path):**
-
-1. In Supabase, open the SQL Editor (Dashboard → SQL Editor), paste the contents of `sql/schema.sql`, and run it to create the three tables.
-2. In the project root, create a `.env` from `.env.example` and fill in `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
-3. Seed and run the matcher against Supabase:
-
-```bash
-python src/seed_supabase.py
-python -m src.run_match --supabase --write-matches
-```
-
-This reads catalog and scraped rows from the local JSON files, upserts them into Supabase, runs normalization and matching, writes matches into the `product_matches` table, and also writes `validation/results.csv` locally for evaluation.
-
-**Local-only mode (for quick runs):**
-
-You can run the same logic without Supabase by reading directly from JSON:
-
-```bash
-python -m src.run_match
-```
-
-This skips the database and just writes `validation/results.csv`; `python src/evaluate` works the same either way.
+- **db.py** – Loads `.env`, exposes `get_supabase`, `fetch_table`, `upsert_rows`, `upsert_matches`.
+- **seed_supabase.py** – Reads local JSON and upserts into Supabase.
+- **run_match.py** – With `--supabase --write-matches` loads from Supabase and writes `product_matches`; without it reads from JSON and writes `validation/results.csv` only.
 
 ---
 
@@ -155,7 +170,6 @@ We use two files that mirror a real setup: a **master catalog** and **scraped re
 - **scraped_products.json (52 rows)** – Simulates messy rows you'd get from multiple retailers: same products with different titles, promos, typos, missing UPCs, and size formats. Each row has `id` (sc_001 … sc_052), `retailer`, `product_name`, `size_raw`, `upc` (often null), `product_url`. We didn't aim for realism in URLs; we aimed for **coverage**: every important edge case appears at least once so the matcher and validator can be tested.
 - **validation/sample_20.csv (52 rows)** – One row per scraped product. Columns: `scraped_id`, `expected_outcome` (match or reject), `expected_existing_id` (e.g. ex_005 or ex_005|ex_006 when two catalog rows are the same product), and `notes`. This is our hand-labeled ground truth. We ordered rows by scraped_id so it's easy to see the full set and compare with `results.csv`.
 
-So: **one scraped product → one ground-truth row**. That lets us report accuracy as "52/52" and catch every mismatch.
 
 ### Edge cases we intentionally included
 
@@ -176,7 +190,6 @@ We added these so we can test specific behaviors and avoid false positives:
 | **No brand** | Chicken breast, store-brand dish soap – we expect no match to a branded catalog entry; brand is None and we rely on size + token for generic chicken. |
 | **Same product, multiple catalog rows** | ex_005 and ex_006 both Coke 12pk (same UPC) – ground truth allows either so we can accept "match to ex_005 or ex_006". |
 
-In `sample_20.csv` we mark many of these as **expected reject** even when names look similar, so the system stays biased against false positives and we can measure that with evaluate.py.
 
 ### Adapting this to real production data
 
@@ -191,19 +204,7 @@ In short: our sample dataset is structured like a minimal production setup (cata
 
 ## 5. Validation
 
-`evaluate.py` compares matcher output to ground truth in `validation/sample_20.csv` (columns: scraped_id, expected_outcome, expected_existing_id, notes). Use `ex_005|ex_006` when multiple existing rows are the same product.
-
-```bash
-# Supabase-backed run (primary)
-python -m src.run_match --supabase --write-matches
-python src/evaluate
-
-# Local JSON-only run (no Supabase)
-python -m src.run_match
-python src/evaluate
-```
-
-You get accuracy and a list of mismatches (wrong match, wrong reject, or wrong existing ID).
+`evaluate.py` compares matcher output to ground truth in `validation/sample_20.csv` (columns: scraped_id, expected_outcome, expected_existing_id, notes). Use `ex_005|ex_006` when multiple existing rows are the same product. You get accuracy and a list of mismatches (wrong match, wrong reject, or wrong existing ID).
 
 **False match analysis.** When you run evaluate you get four mismatches: we expect REJECT but the matcher returns MATCH (false positive). Each is analysed separately below.
 
@@ -230,7 +231,7 @@ These can be implemented as extra checks in the matcher (e.g. in normalize or ma
 ## 6. Brand learning & tests
 
 - **build_brands.py** – Optional. Learns brand tokens from `existing_products.json` (same logic as normalize: first token, first-two-token, frequency merge) and writes `learned_brands.json` for inspection. normalize.py does not depend on it; it learns from the catalog at import.
-- **test_size_score.py** – 13 tests for size scoring: conversions (16 oz vs 1 lb, 500 ml vs 0.5 L, etc.), different dimensions (6 oz vs 6 fl oz → 0), count tolerance (±1), missing size (0.4), numeric ±2%. Run: `python -m pytest tests/test_size_score.py -v`. Needs `pytest` from requirements.
+- **test_size_score.py** – 13 tests for size scoring: conversions (16 oz vs 1 lb, 500 ml vs 0.5 L, etc.), different dimensions (6 oz vs 6 fl oz → 0), count tolerance (±1), missing size (0.4), numeric ±2%.
 
 ---
 

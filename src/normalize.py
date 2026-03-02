@@ -36,7 +36,7 @@ PROMO_PHRASES = [
     "limit 3",
 ]
 
-# Skip these in core name; keep "original"—it distinguishes products
+# Skip these in core name
 STOPWORDS = {
     "and", "&", "the", "a", "an", "of", "with", "in", "on", "to",
     "scent", "flavor", "flavours", "approx", "approximately", "-",
